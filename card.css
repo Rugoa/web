@@ -1,0 +1,263 @@
+body {
+    margin: 0;
+}
+    
+header {
+    margin: 10px 0 20px 0;
+}
+    
+hr {
+    margin: 30px 0;
+}
+    
+header img,
+#start_screen,
+#score_screen,
+#game_screen,
+#score_16_list,
+#score_36_list,
+#select_game_mode_frame {
+    max-width: 600px;
+    min-width: 300px;
+}
+    
+header img,
+#start_screen,
+#score_screen,
+#game_screen,
+#start_btn,
+#score_btn,
+#start_screen select,
+.card>span,
+#retry_btn,
+.to_start_btn,
+#next_btn,
+#modal_box button {
+    display: block;
+}
+    
+#select_game_mode_frame>p,
+#score_title {
+    background: -moz-linear-gradient(#5f5f5f, #ffffff);
+    background: -webkit-linear-gradient(#5f5f5f, #ffffff);
+    background: linear-gradient(#5f5f5f, #ffffff);
+}
+    
+header img,
+#start_screen,
+#score_screen,
+#game_screen {
+    width: 100%;
+    margin: 0 auto;
+    padding: 5px;
+}
+    
+#start_btn,
+#score_btn {
+    width: 200px;
+    padding: 10px 0;
+    margin: 0 auto;
+}
+    
+#select_game_mode_frame>p {
+    color: #ffffff;
+    font-weight: bold;
+    margin: 10px 0 0 0;
+    padding: 15px 10px 15px 10px;
+    border: solid 1px #bfbfbf;
+    border-radius: 10px 10px 0 0;
+}
+    
+#select_game_mode_frame>div {
+    margin: 0 0 10px 0;
+    padding: 10px 10px 15px 10px;
+    border: solid 1px #bfbfbf;
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+}
+    
+#start_screen select {
+    width: 155px;
+    margin: 10px 0;
+    padding: 6px 0 10px 12px;
+    border: solid 1px #bfbfbf;
+    border-radius: 30px;
+    font-size: 18px;
+}
+    
+    
+#message {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffffff;
+    text-align: center;
+    border-top: solid 2px #0000ff;
+    border-bottom: solid 2px #0000ff;
+    border-right: solid 2px #0000ff;
+    border-left: solid 2px #0000ff;
+    margin: 10px 0;
+    padding: 5px 0;
+    background: -moz-radial-gradient(#0000ff, #ffffff);
+    background: -webkit-radial-gradient(#0000ff, #ffffff);
+    background: radial-gradient(#0000ff, #ffffff);
+}
+    
+#cards_container {
+    margin: 0 auto;
+    border: solid 1px #dfdfdf;
+}
+    
+#cards_container>div {
+    width: 25%;
+    height: 100px;
+    padding: 5px;
+    float: left;
+    box-sizing: border-box;
+}
+    
+.card {
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    border: solid 1px #bfbfbf;
+}
+    
+.card>span {
+    padding-top: 28px;
+    font-size: 24px;
+}
+    
+.card>img {
+     width: 100%;
+    height: 100%;
+}
+    
+.rank_16_frame,
+.rank_36_frame {
+    border: solid 1px #bfbfbf;
+    padding: 15px 10px;
+    border-radius: 25px;
+    box-shadow: 0 5px 5px 0 rgba(0, 0, 0, .5);
+}
+    
+.low_label {
+    color: #ffffff;
+    padding: 5px;
+    background: -moz-radial-gradient(#8f8f8f, #ffffff);
+    background: -webkit-radial-gradient(#8f8f8f, #ffffff);
+    background: radial-gradient(#8f8f8f, #ffffff);
+    border-radius: 15px;
+}
+    
+.high_label {
+    color: #ffffff;
+    padding: 5px;
+    background: -moz-radial-gradient(#ff0000, #ffffff);
+    background: -webkit-radial-gradient(#ff0000, #ffffff);
+    background: radial-gradient(#ff0000, #ffffff);
+    border-radius: 7px;
+}
+    
+#start_btn,
+#score_btn,
+#retry_btn,
+.to_start_btn {
+    padding: 20px;
+    border-radius: 35px;
+    box-shadow: 0 5px 5px 0 rgba(0, 0, 0, .5);
+    border: none;
+    margin: 10px auto;
+}
+    
+#next_btn {
+    font-size: 20px;
+    color: #ffffff;
+    clear: both;
+    margin: 20px auto 0 auto;
+    padding: 20px 60px;
+    border: none;
+    border-radius: 40px;
+}
+    
+.clear:after {
+    content: "";
+    display: block;
+    clear: both;
+}
+    
+#score_title {
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    border: solid 3px #bfbfbf;
+    padding: 15px 0;
+}
+    
+#modal_frame {
+    background: rgba(45, 45, 45, 0.5);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+    
+#modal_box {
+    width: 50%;
+    background-color: #ffffff;
+    border: solid 1px #8f8f8f;
+    opacity: 1.0;
+    margin: 30px auto 0 auto;
+    padding: 50px;
+    font-size: 20px;
+    text-align: center;
+    box-shadow: 0 15px 15px 0 rgba(0, 0, 0, .5);
+    background-image: url("./images/finished_game_back.png");
+    background-repeat: no-repeat;
+}
+    
+#modal_box p {
+    color: #3f3f3f;
+    font-weight: bold;
+}
+    
+#modal_box button {
+    width: 200px;
+    padding: 10px 50px;
+    margin: 20px auto;
+}
+    
+table {
+    border-collapse: collapse;
+    margin-bottom: 30px;
+}
+    
+#score_16_list,
+#score_36_list {
+    margin: 30px auto 40px auto;
+    border: solid 5px #5f5f5f;
+    box-shadow: 0 15px 15px 0 rgba(0, 0, 0, .5);
+}
+    
+#score_16_list td,
+#score_16_list th,
+#score_36_list td,
+#score_36_list th {
+    color: 18px;
+    border: solid 2px #2f2f2f;
+    padding: 6px 20px;
+    text-align: center;
+}
+    
+#score_16_list th,
+#score_36_list th {
+    color: #ffffff;
+    background-color: #8f8f8f;
+    background: -moz-linear-gradient(#8f8f8f, #cfcfcf);
+    background: -webkit-linear-gradient(#8f8f8f, #cfcfcf);
+    background: linear-gradient(#8f8f8f, #cfcfcf);
+}
+    
+#testDisplay td {
+    border: solid 1px #000000;
+    text-align: right;
+}
