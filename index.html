@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ja">	
+<head>
+    <meta charset="UTF-8">
+    <title>カードゲームアプリ</title>
+	<link rel="stylesheet" href="card.css">
+</head>	
+<body>
+    <div id="modal_frame">
+        <div id="modal_box">
+            <p>ゲーム終了！！</p>
+            <p>正解率：<span id="success_rate">0</span>%</p>
+            <button id="retry_btn">リトライ</button>
+            <button class="to_start_btn">スタート画面へ</button>
+        </div>
+    </div>
+    <header>
+        <img src="./images/title.png" alt="カードゲームタイトル">
+    </header>
+    <main>
+        <div id="start_screen">
+            <p class="rank_16_frame">16マスの現在のランク：<span class="rank_16"></span></p>
+            <p class="rank_36_frame">36マスの現在のランク：<span class="rank_36"></span></p>
+            <div id="select_game_mode_frame">
+                <p>■ゲームモード選択</p>
+                <div>
+                    <p>マス目の数を選択してください。</p>
+                        <select id="game_mode">
+                            <option value="16">１６マス</option>
+                            <option value="36">３６マス</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="start_btn">スタート</button>
+                <hr>
+                <button id="score_btn">スコア&ランク</button>
+            </div>
+            <div id="game_screen">
+                <p id="message"></p>
+                <p>現在のカード選択回数：<span id="select_card_count">0</span></p>
+                <div id="cards_container" class="clear"></div>
+                <button id="next_btn">次へ</button>
+            </div>
+            <div id="score_screen">
+                <p id="score_title">スコア&ランク</p>
+                <p class="rank_16_frame">16マスの現在のランク：<span class="rank_16"></span></p>
+                <table id="score_16_list"></table>
+                <hr>
+                <p class="rank_36_frame">36マスの現在のランク：<span class="rank_36"></span></p>
+                <table id="score_36_list"></table>
+				<hr>
+                <button class="to_start_btn">スタート画面</button>
+            </div>
+        </main>
+        <script>
+            let firstCard = null;             //１回目に選択したカード
+            let secondCard = null;            //２回目に選択したカード
+            let cardsNums = new Array();      //カードの番号用配列
+            let firstPickFlg = true;          //１回目のカードの選択フラグ
+            let finishedOneCycle = false;     //１サイクル文のゲーム終了フラグ
+            let cardsObj = null;              //全カードオブジェクト格納用
+            let successCount = 0;             //カード選択成功回数
+            let selectCount = 0;              //カード選択回数
+            let game_mode_num = 16;           //ゲームモード
+            let score_16_data = new Array();  //１６マスのスコアデータ
+            let score_36_data = new Array();  //３６マスのスコアデータ
+	
+            /**
+             * カードを生成
+             */
+            function createCards() {
+                getElmId("cards_container").innerHTML = '';              //カードをクリア
+	
+                cardsNums = createRandomNums();                          //カードのランダムな番号を生成
+	
+                for (var i = 0; i < game_mode_num; i++) {
+                    let frame = document.createElement("div");           //カードフレームの作成
+                    let card = document.createElement("div");            //カードの作成
+                    let card_num = document.createElement("span");       //カード番号用
+                    let card_cover_img = document.createElement("img");  //カバー画像表示用
+                    card_cover_img.dataset.id = i;                       //データIDを設定
+                    card_cover_img.src = "images/cover.png";             //カバー画像ファイル名を設定
+                    card.classList.add("card");                          //クラスを追加
+                    card_num.classList.add("card_num");                  //クラスを追加
+                    card_num.style.display = "none";                     //カードの番号を非表示
+                    card.appendChild(card_num);                          //カード番号をカードフレームに追加
+                    card.appendChild(card_cover_img);                    //カバー画像をカードフレームに追加
+                    frame.appendChild(card);                             //カードフレームへカードを追加
+                    getElmId("cards_container").appendChild(frame);      //カードコンテナにカードフレームを追加
+                }
+	
+                let cards = Array.from(document.getElementsByClassName("card"));  //カードを配列として取得
+                cards.forEach(element => {
+                    element.addEventListener("click", selectCard, false);  //カードクリック時のイベントリスナーを設定
+                });
+	
+                //カードの横幅を設定
+                let cards_frame = Array.from(getElmId('cards_container').children);  //全カード要素を取得
+                if (game_mode_num === 16) {  //１６マスのゲームの場合
+                    cards_frame.forEach(
+                        element => element.style.width = "25%"
+                    );
+                } else if (game_mode_num === 36) {  //３６マスのゲームの場合
+                    cards_frame.forEach(
+                        element => element.style.width = "16%"
+                    );
+                }
+            }
+	
+            /**
+             * カード選択時の処理
+            */
+            function selectCard(e) {
+                if (!finishedOneCycle) { //１サイクルのゲームが終了していない場合
+                    selectCount++;                                          //カード選択カウントを＋１カウントアップ                                               
+                    getElmId('select_card_count').innerHTML = selectCount;  //カード選択回数を表示
+                    let selectCard = cardsObj[e.target.dataset.id];         //選択カードの取得
+	
+                    selectCard.getElementsByTagName('img')[0].style.display = "none";                      //カバー画像を非表示
+                    selectCard.getElementsByTagName('span')[0].style.display = "block";                    //カード番号用要素を表示
+                    selectCard.getElementsByTagName('span')[0].innerHTML = cardsNums[e.target.dataset.id]; //カード番号を設定
+                    if (firstPickFlg) { //１回目のカードを選択しているか？
+                        firstCard = selectCard;  //１回目の「選択カード」を変数に設定
+                        firstPickFlg = false;    //１回目の「カード選択フラグ」を設定
+						getElmId("message").innerHTML = "２枚目のカードを選択してください。";  //表示メッセージを設定
+                    } else { //２回目のカードを選択しているか？
+                        getElmId("next_btn").disabled = false;                   //「次へ」ボタンを有効化
+                        getElmId("next_btn").style.backgroundColor = "#0000ff";  //「次へ」ボタンの背景色を青に変更
+                        secondCard = selectCard;                                 //２回目の選択カードを変数に設定
+                        firstPickFlg = true;                                     //１回目のカード選択フラグを設定
+                        finishedOneCycle = true;                                 //１サイクル分のゲーム実行フラグを設定
+                        getElmId("message").innerHTML = "「次へ」ボタンをクリックしてください。";  //表示メッセージを設定
+                        if (successCount === (game_mode_num / 2) - 1) {  //全てのカードが正解になっているか？
+                            //「ゲーム結果」をローカルストレージへ保存
+                            var d = new Date();  //日付オブジェクトを生成
+                            //日付文字列を生成
+                            var d_save_str = d.getFullYear() + "年" + (d.getMonth() + 1) + "月" + d.getDate() + "日" + d.getHours() + "時" + d.getMinutes() + "分";
+	
+                            //「配列データ」を作成
+                            let regist_data = {
+                                'select_count': selectCount,
+                                'date': d_save_str
+                            }
+	
+                            if (game_mode_num === 16) {                         //１６マスのゲーム実行時
+                                score_16_data.push(regist_data);                //スコアデータをスコア用配列に追加
+                                saveScoreData('score_16_data', score_16_data);  //スコア用配列をローカルストレージへ保存
+                            } else if (game_mode_num === 36) {                  //３６マスのゲーム実行時
+                                score_36_data.push(regist_data);                //スコアデータをスコア用配列に追加
+                                saveScoreData('score_36_data', score_36_data);  //スコア用配列をローカルストレージへ保存
+                            }
+	
+                            getElmId("message").innerHTML = "終了";                   //メッセージを表示
+                            getElmId("next_btn").disabled = true;                    //「次へ」ボタンを無効化
+                            getElmId("next_btn").style.backgroundColor = "#afafaf";  //「次へ」ボタンの背景色を変更
+	
+                            getElmId('modal_frame').style.display = 'block';                            //モーダル画面を表示
+                            getElmId('success_rate').innerHTML = Math.round((16 / selectCount) * 100);  //モーダル画面へ正解率を表示
+	
+                            successCount = 0; //正解率をリセット
+                            selectCount = 0;  //カード選択回数をリセット
+	
+                            finishedOneCycle = false;  //１サイクル分のゲーム実行フラグを設定
+                        }
+                    }
+                } else {
+                    alert("「次へ」ボタンをクリックしてください。");
+                }
+            }
+	
+            /**
+              * 次のカードを選択
+              */
+            function nextSelectCard() {
+                getElmId("message").innerHTML = "１枚目のカードを選択してください。";    //表示メッセージを設定
+                //選択カード間違い時
+                if (firstCard.getElementsByTagName('span')[0].innerHTML !== secondCard.getElementsByTagName('span')[0].innerHTML) {
+                    firstCard.getElementsByTagName('img')[0].style.display = "block";   //１回目の選択カードのカバー画像を表示
+                    firstCard.getElementsByTagName('span')[0].style.display = "none";   //１回目の選択カードの番号を非表示
+                    secondCard.getElementsByTagName('img')[0].style.display = "block";  //２回目の選択カードのカバー画像を表示
+                    secondCard.getElementsByTagName('span')[0].style.display = "none";  //２回目の選択カードの番号を非表示
+                } else {  //選択カード正解時
+                    successCount++;  //正解カウントを１カウントアップ
+                }
+                finishedOneCycle = false;                                  //１サイクル分のゲーム実行フラグを設定
+                getElmId("next_btn").disabled = true;                      //「次へ」ボタンを無効化
+                getElmId("next_btn").style.backgroundColor = "#afafaf";    //「次へ」ボタンの背景色を変更
+            }
+	
+            /**
+             * ランダム値のペアを生成
+             */
+            function createRandomNums() {
+                let randNums = [];  //ランダム値格納用
+                let nums = [];  　  //配列要素番号格納用
+                let rand = 0;       //ランダム値格納用
+	
+                //配列要素番号を作成
+                for (let i = 1; i <= (game_mode_num / 2); i++) {
+                    nums.push(i);
+                    nums.push(i);
+                }
+	
+                //ランダムな配列要素番号を作成
+                for (let i = 0; i < game_mode_num; i++) {
+                    rand = Math.floor(Math.random() * nums.length);
+                    randNums.push(nums[rand]);
+                    nums.splice(rand, 1);
+                }
+                return randNums;
+            }
+	
+            /**
+             * 「スタート」ボタンをクリック時
+             */
+            function startGame() {
+                displayScreen('game');                                  //ゲーム画面を表示
+                getElmId("select_card_count").innerHTML = selectCount;  //カード選択回数を更新
+	
+                game_mode_num = parseInt(getElmId('game_mode').value);  //ゲームモードを取得
+	
+                createCards();                                          //カードの生成
+                cardsObj = getElmClass("card");                         //カードオブジェクトを取得
+	
+                getElmId("message").innerHTML = "１枚目のカードを選択してください。";  //表示メッセージを設定
+                getElmId("next_btn").disabled = true;                                //「次へ」ボタンを無効化
+            }
+	
+            /**
+             * 「スコア」ボタンをクリック時
+             */
+            function displayScore() {
+                displayScreen('score');  //スコア画面を表示
+                displayScoreList();      //スコア一覧を表示
+            }
+	
+            /**
+              * スコア一覧を表示
+              */
+            function displayScoreList() {
+                //１６マスのランクを表示
+                let score_16_rank = getRankVal(score_16_data);  //「ランク値」を計算
+                Array.from(getElmClass('rank_16')).forEach(
+                    element => isNaN(score_16_rank) ? element.innerHTML = score_16_rank : element.innerHTML = createRankStar(score_16_rank)
+                );
+	
+                //３６マスのランクを表示
+                let score_36_rank = getRankVal(score_36_data);  //「ランク値」を計算
+                Array.from(getElmClass('rank_36')).forEach(
+                    element => isNaN(score_36_rank) ? element.innerHTML = score_36_rank : element.innerHTML = createRankStar(score_36_rank)
+                );
+	
+                //１６マスの「スコア一覧」テーブルを作成＆表示
+                createScoreTable('score_16_list', score_16_data);
+	
+                //３６マスの「スコア一覧」テーブルを作成＆表示
+                createScoreTable('score_36_list', score_36_data);
+            }
+	
+            /**
+              *  「スコア一覧」テーブルを作成＆表示（最新のデータから１０プレイ分を表示）
+              */
+            function createScoreTable(list_type, score_data) {
+                getElmId(list_type).innerHTML = '';     //現在の表示内容をクリア
+	
+                //テーブルヘッダーの作成＆表示
+                let tr = document.createElement('tr');
+                let td = null;
+                let th = document.createElement('th');
+                th.innerHTML = 'プレイ日時';
+                tr.appendChild(th);
+                th = document.createElement('th');
+                th.innerHTML = '正解率';
+                tr.appendChild(th);
+                getElmId(list_type).appendChild(tr);
+                if (score_data.length !== 0) {
+                    //スコア一覧データを作成＆表示
+                    for (var i = score_data.length - 1; i > (score_data.length - 1) - 10; i--) {
+                        if (i >= 0) {
+                            tr = document.createElement('tr');
+                            td = document.createElement('td');
+                            td.innerHTML = score_data[i]['date'];
+                            tr.appendChild(td);
+                            td = document.createElement('td');
+                            td.innerHTML = Math.round((16 / parseInt(score_data[i]['select_count'])) * 100) + "%";
+                            tr.appendChild(td)
+                            getElmId(list_type).appendChild(tr);
+                        }
+                    }
+                }
+            }
+	
+            /**
+              *  指定画面を表示
+             */
+            function displayScreen(screen_type) {
+                hideScreen();
+                switch (screen_type) {
+                    case 'start':  //スタート画面を表示
+                        getElmId('start_screen').style.display = 'block';
+                        displayScoreList();  //スコア一覧を表示
+                        break;
+                    case 'game':   //ゲーム画面を表示
+                        getElmId('game_screen').style.display = 'block';
+                        break;
+                    case 'score':  //スコア一覧画面を表示
+                        getElmId('score_screen').style.display = 'block';
+                        break;
+                }
+            }
+	
+            /**
+              *  画面を非表示
+              */
+            function hideScreen() {
+                getElmId('start_screen').style.display = 'none';  //スタート画面を非表示
+                getElmId('game_screen').style.display = 'none';   //ゲーム画面を非表示
+                getElmId('score_screen').style.display = 'none';  //スコア画面を非表示
+            }
+	
+            /**
+             * 「リトライ」ボタンをクリック時（モーダル画面）
+             */
+            function retry() {
+                getElmId('modal_frame').style.display = 'none';  //モーダル画面を非表示
+                startGame();                                     //ゲームを開始
+            }
+
+            /**
+             * 「スタート画面へ」ボタンをクリック時（モーダル画面）
+             */
+            function toStartScreen() {
+                getElmId('modal_frame').style.display = 'none';  //モーダル画面を非表示
+                displayScreen('start');                          //スタート画面を表示
+            }
+	
+            /** 
+             *  「ランク値」を計算
+             */
+            function getRankVal(scoreData) {
+                if (scoreData.length < 10) {  //プレイ回数が足りない場合
+                    let remain_game = 10 - scoreData.length;                       //スコア判定までの残りゲーム数
+                    return 'あと' + remain_game + 'ゲームでランクが判定できます。';  //表示用メッセージの作成
+                } else {
+                    let sum = 0;   //合計値格納用
+                    let rank = 0;  //ランク数格納用
+	
+                    //最新のデータから１０プレイ分を元に「ランク値」を算出
+                    for (var i = scoreData.length - 1; i > (scoreData.length - 1) - 10; i--) {
+                        sum += parseInt(scoreData[i]['select_count']);  //スコアの合計値を計算
+                    }
+                    let judge_val = Math.round((160 / sum) * 100);  //スコアを算出
+                    rank = Math.floor((judge_val / 10) + 1);        //ランクの計算
+                    return rank;
+                }
+            }
+	
+            /** 
+             *  「ランクスター」を作成
+             */
+            function createRankStar(rank_val) {
+                let rank_star = '';  //ランクスター文字列格納用
+                for (var i = 1; i <= 10; i++) {
+                    i <= rank_val ? rank_star += "★" : rank_star += "☆";  //ランクスター文字列を作成
+                }
+                //表示用ランク文字列を作成
+                return '<span class="low_label">Low</span> ' + rank_star + ' <span class="high_label">High</span> (Rank:' + rank_val + ')';
+            }
+	
+            /** 
+              *  「スコアデータ」をロード
+              */
+            function loadScoreData(data_type) {
+                let load_json = localStorage.getItem(data_type);  //「ローカルストレージ」からデータをロード
+                let score_data = JSON.parse(load_json);           //「JSON」から「スコアデータ（配列）」へ変換
+	
+                //スコアデータが無い場合
+                if (score_data === null) {
+                    score_data = new Array();
+                }
+	
+                return score_data;
+            }
+	
+            /** 
+             *  「スコアデータ」をセーブ
+             */
+            function saveScoreData(data_type, save_data) {
+                let save_json = JSON.stringify(save_data);    //「スコアデータ（配列）」を「JSON」へ変換
+                localStorage.setItem(data_type, save_json);   //「ローカルストレージ」へセーブ
+            }
+	
+            /**
+              * 指定したIDの要素を取得
+              */
+            function getElmId(val) {
+                return document.getElementById(val);
+            }
+	
+            /**
+             * 指定したクラスの要素を取得
+             */
+            function getElmClass(val) {
+                return document.getElementsByClassName(val);
+            }
+	
+            /**
+             * 指定した要素名の要素を取得
+             */
+            function getElm(val) {
+                return document.querySelector(val);
+            }
+	
+            window.onload = function () {
+                getElmId("start_btn").addEventListener("click", startGame, false);      //スタートボタンのイベントリスナー設定
+                getElmId("next_btn").addEventListener("click", nextSelectCard, false);  //「次へ」ボタンのイベントリスナー設定
+                getElmId("retry_btn").addEventListener("click", retry, false);          //リトライボタンのイベントリスナー設定
+                let to_start_btn = Array.from(getElmClass('to_start_btn'));             //スタート画面遷移ボタンの取得   
+                to_start_btn.forEach(element => {
+                    element.addEventListener("click", toStartScreen, false);            //スタート画面遷移ボタンのイベントリスナー設定
+                });
+	
+                getElmId("score_btn").addEventListener("click", displayScore, false);   //スコアボタンのイベントリスナー設定
+	
+                // スコアデータのロード
+                score_16_data = loadScoreData('score_16_data');  //１６マスのスコアデータをロード
+                score_36_data = loadScoreData('score_36_data');  //３６マスのスコアデータをロード
+	
+                displayScreen('start');                          //スタート画面を表示
+                getElmId('modal_frame').style.display = 'none';  //モーダル画面を非表示
+            }
+        </script>
+    </body>
+</html>
